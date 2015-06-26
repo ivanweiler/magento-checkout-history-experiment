@@ -1,0 +1,191 @@
+<?php
+/**
+ * Magento
+ *
+ * NOTICE OF LICENSE
+ *
+ * This source file is subject to the Academic Free License (AFL 3.0)
+ * that is bundled with this package in the file LICENSE_AFL.txt.
+ * It is also available through the world-wide-web at this URL:
+ * http://opensource.org/licenses/afl-3.0.php
+ * If you did not receive a copy of the license and are unable to
+ * obtain it through the world-wide-web, please send an email
+ * to license@magento.com so we can send you a copy immediately.
+ *
+ * DISCLAIMER
+ *
+ * Do not edit or add to this file if you wish to upgrade Magento to newer
+ * versions in the future. If you wish to customize Magento for your
+ * needs please refer to http://www.magento.com for more information.
+ *
+ * @category    design
+ * @package     rwd_default
+ * @copyright   Copyright (c) 2006-2015 X.commerce, Inc. (http://www.magento.com)
+ * @license     http://opensource.org/licenses/afl-3.0.php  Academic Free License (AFL 3.0)
+ */
+?>
+<div class="page-title">
+    <h1><?php echo $this->__('Checkout') ?></h1>
+</div>
+<script type="text/javascript" src="<?php echo $this->getJsUrl('varien/accordion.js') ?>"></script>
+<script type="text/javascript" src="<?php echo $this->getSkinUrl('js/opcheckout.js') ?>"></script>
+<script type="text/javascript" src="<?php echo $this->getSkinUrl('js/opcheckout_rwd.js') ?>"></script>
+<ol class="opc opc-firststep-<?php echo $this->getActiveStep() ?>" id="checkoutSteps">
+<?php $i=0; foreach($this->getSteps() as $_stepId => $_stepInfo): ?>
+<?php if (!$this->getChild($_stepId) || !$this->getChild($_stepId)->isShow()): continue; endif; $i++ ?>
+    <li id="opc-<?php echo $_stepId ?>" class="section<?php echo !empty($_stepInfo['allow'])?' allow':'' ?><?php echo !empty($_stepInfo['complete'])?' saved':'' ?>">
+        <div class="step-title">
+            <span class="number"><?php echo $i ?></span>
+            <h2><?php echo $_stepInfo['label'] ?></h2>
+            <a href="#"><?php echo $this->__('Edit') ?></a>
+        </div>
+        <div id="checkout-step-<?php echo $_stepId ?>" class="step a-item" style="display:none;">
+            <?php echo $this->getChildHtml($_stepId) ?>
+        </div>
+    </li>
+<?php endforeach ?>
+</ol>
+<script type="text/javascript">
+//<![CDATA[
+    var accordion = new Accordion('checkoutSteps', '.step-title', true);
+    <?php if($this->getActiveStep()): ?>
+    accordion.openSection('opc-<?php echo $this->getActiveStep() ?>');
+    <?php endif ?>
+    var checkout = new Checkout(accordion,{
+        progress: '<?php echo $this->getUrl('checkout/onepage/progress') ?>',
+        review: '<?php echo $this->getUrl('checkout/onepage/review') ?>',
+        saveMethod: '<?php echo $this->getUrl('checkout/onepage/saveMethod') ?>',
+        failure: '<?php echo $this->getUrl('checkout/cart') ?>'}
+    );
+
+
+
+
+/**
+ *   onstep change, if step >1  add #X  else remove #X (history(-1))
+ *
+ *   onstatechange, if no #X and step>1, go to previous step
+ *
+ */
+
+var CheckoutHistory = Class.create({
+
+
+});
+
+
+(function() {
+
+//    var steps = checkout.accordion.sections.map(function(el) {
+//        return el.readAttribute('id').replace('opc-', '');
+//    });
+
+    //var initialHash = "";
+    //var stepHash = "#/steps";
+
+    var firstStep = checkout.accordion.sections.first().readAttribute('id').replace('opc-', '');
+    var ignoreHashChange = false;
+
+    if(window.location.hash != "#/steps") {
+
+        console.log('init hash set:' + window.location.hash);
+
+        if("pushState" in history) {
+            console.log("pushState");
+            history.pushState(undefined, undefined, "#/steps");
+        } else {
+            window.location.hash = "#/steps";
+        }
+    }
+
+    //console.log(initialHash);
+
+    //window.location.hash = "/steps";
+    //window.location.hash = "/steps";
+
+//    Event.observe(window, 'load', function() {
+//        window.location.hash = "header";
+//    });
+    //window.location.href = "./#/steps3";
+
+
+//    var gotoSection = checkout.gotoSection.bind(checkout);
+//    checkout.gotoSection = function(section, reloadProgressBlock) {
+//        gotoSection(section, reloadProgressBlock);
+//
+//        console.log(checkout.currentStep);
+//
+//        if(checkout.currentStep != steps[0]) {
+//            window.location.hash = "/steps";
+//        }
+//
+//    };
+
+    Event.observe(window, 'hashchange', function(e) {
+
+        console.log('hashchange:' + window.location.hash);
+        //console.log(window.location.hash);
+
+        if(ignoreHashChange) {
+            ignoreHashChange = false;
+            return;
+        }
+
+        if(window.location.hash == "") {
+            if(checkout.currentStep != firstStep) {
+                checkout.back();
+                ignoreHashChange = true;
+                window.location.hash = "#/steps";
+            } else {
+                if(confirm('Sure?')) {
+                    history.back();
+                } else {
+                    ignoreHashChange = true;
+                    window.location.hash = "#/steps";
+                }
+            }
+        }
+
+    });
+
+
+
+//    Event.observe(window, 'beforeunload', function(e) {
+//        return "Leaving this page will reset the wizard";
+//        alert(1);
+//        window.location.hash = "";
+//    });
+
+
+//    window.onbeforeunload = function(e) {
+//        window.location.hash = "";
+//        e.returnValue = "Leaving this page will reset the wizard";
+//        return "Leaving this page will reset the wizard";
+//    };
+
+
+})();
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//]]>
+</script>
